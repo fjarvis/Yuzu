@@ -43,6 +43,7 @@ Agents live in `.claude/agents/` and are invoked by name.
 
 | Agent | Role | Primary Concern |
 |-------|------|-----------------|
+| workflow-orchestrator | Governance Orchestrator | Gate sequencing, parallel agent invocation, finding propagation, governance ledger |
 | architect | System Architect | Module boundaries, proto compat, ABI stability |
 | security-guardian | Security Engineer | Auth enforcement, crypto, input validation, audit |
 | happy-path | Happy Path Reviewer | Normal-condition correctness, logic completeness |
@@ -51,6 +52,7 @@ Agents live in `.claude/agents/` and are invoked by name.
 | chaos-injector | Chaos Injector | Controlled failure scenario generation from identified risks |
 | quality-engineer | QA & Test Engineer | Test coverage, fuzz targets, coverage thresholds |
 | cross-platform | Platform Compatibility | Win/Linux/macOS/ARM64 builds, OS-specific code |
+| cpp-expert | C++23 Language Expert | Idiomatic C++23, lifetime/move semantics, ABI boundary, cross-compiler portability |
 | docs-writer | Technical Writer | User manual, YAML defs, API docs, roadmap |
 | build-ci | Build & CI/CD | Meson, vcpkg, GitHub Actions, proto codegen |
 | performance | Performance Engineer | SQLite optimization, load testing, gateway scaling |
@@ -75,7 +77,7 @@ Agents live in `.claude/agents/` and are invoked by name.
 
 1. **Change Summary** — the producing agent writes a structured summary (files, what, why, interfaces affected, security surface, user-facing impact) shared with ALL agents.
 2. **Mandatory deep-dive** — security-guardian and docs-writer read every modified file for every change. Security reviews block on CRITICAL/HIGH findings. Documentation blocks if user-facing changes lack doc updates.
-3. **Domain-triggered review** — architect, quality-engineer, cross-platform, performance, build-ci, dsl-engineer, erlang-dev, gateway-erlang, plugin-developer, and release-deploy review when changes touch their domain.
+3. **Domain-triggered review** — architect, quality-engineer, cross-platform, cpp-expert, performance, build-ci, dsl-engineer, erlang-dev, gateway-erlang, plugin-developer, and release-deploy review when changes touch their domain. cpp-expert reviews any `.cpp`/`.hpp` change for C++23 idiom correctness and ABI boundary safety.
 4. **Correctness & resilience analysis** — happy-path, unhappy-path, and consistency-auditor run in parallel. happy-path validates normal-condition correctness. unhappy-path performs systematic failure-mode interrogation and produces a risk register. consistency-auditor checks cross-component state/schema/contract consistency. All three are mandatory during full governance; consistency-auditor also triggers on schema evolution and protocol changes.
 5. **Chaos analysis** — chaos-injector ingests outputs from unhappy-path and consistency-auditor (plus happy-path correctness baseline as optional context) to generate controlled failure scenarios with success criteria and rollback procedures. Runs only after gate 4 completes. Skipped if neither unhappy-path nor consistency-auditor produce findings.
 6. **Operational & compliance review** — compliance-officer, sre, and enterprise-readiness run in parallel. compliance-officer verifies SOC 2 control alignment and evidence chain. sre reviews observability, deployment hardening, and recovery posture. enterprise-readiness verifies customer-facing documentation and assurance package consistency. All three are mandatory during full governance.
