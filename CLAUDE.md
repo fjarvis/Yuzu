@@ -65,7 +65,7 @@ Agents live in `.claude/agents/` and are invoked by name.
 | sre | Site Reliability Engineer | SLOs, observability, backup/recovery, capacity planning, hardened deployment |
 | enterprise-readiness | Enterprise Readiness | Customer assurance package, security questionnaires, deployment experience, pilot readiness |
 
-**Workflow:** architect first (design) → feature agents (implement) → erlang-dev (review Erlang code) → cross-platform (compile) → security-guardian (review) → happy-path + unhappy-path + consistency-auditor (parallel analysis) → chaos-injector (failure scenarios) → quality-engineer (test) → docs-writer (document) → compliance-officer + sre + enterprise-readiness (parallel operational review) → build-ci (CI green) → performance (if data-plane) → release-deploy (if packaging).
+**Workflow:** workflow-orchestrator runs the gate pipeline end-to-end — it invokes architect first (design), then the producing feature agents (implement), then drives the governance gates: security-guardian + docs-writer (mandatory deep-dive) → domain-triggered reviewers including cpp-expert for any C++ change, cross-platform for portability, erlang-dev/gateway-erlang for Erlang, plugin-developer, dsl-engineer, build-ci, performance → happy-path + unhappy-path + consistency-auditor (parallel correctness & resilience) → chaos-injector (failure scenarios, if gate 4 produces findings) → quality-engineer (test) → compliance-officer + sre + enterprise-readiness (parallel operational review) → release-deploy (if packaging). The orchestrator passes prior-gate findings forward as context and produces the final governance ledger.
 
 **DSL touchpoints:** dsl-engineer is invoked as a feature agent for scope targeting, policy conditions (CEL), trigger template expressions, parameter binding, workflow primitives, and any YAML DSL spec evolution.
 
@@ -84,7 +84,7 @@ Agents live in `.claude/agents/` and are invoked by name.
 7. **All findings addressed** before merge — CRITICAL/HIGH are blocking, MEDIUM should be fixed, LOW addressed.
 8. **Iterate** — re-review after fixes until the team gives a clean bill. No commit until governance passes.
 
-**Known limitation:** The governance pipeline is convention-enforced, not automated. There are no git hooks or CI checks that verify gate completion. Discipline and peer review are the enforcement mechanism. Future improvement: add governance attestation artifacts or PR checklist requirements.
+**Enforcement:** The workflow-orchestrator agent is the enforcement mechanism — it sequences gates, runs parallel agents concurrently, forwards findings between gates, and produces a governance ledger with a PASS/FAIL verdict. There are still no git hooks or CI checks that verify gate completion independently of the orchestrator, so discipline in actually invoking it remains part of the contract. Future improvement: add governance attestation artifacts or PR checklist requirements so the ledger is captured on the change itself.
 
 **Lesson learned:** Waves 1-4 shipped without governance and accumulated 4 CRITICAL command injection vulnerabilities, untested stores, stale docs, and performance bottlenecks. These were caught before production but should have been caught before commit.
 
